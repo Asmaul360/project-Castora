@@ -4,7 +4,6 @@ import User from "../models/user.model.js";
 import uploadToCloudinary from "../utils/cloudinary.js";
 import AppResponse from "../utils/AppResponse.js";
 import jwt from "jsonwebtoken";
-import { Subscription } from "../models/subscription.model.js";
 import mongoose from "mongoose";
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -19,44 +18,36 @@ const generateAccessAndRefreshTokens = async (userId) => {
   } catch (error) {
     throw new ApiError(
       500,
-      "Something went wrong when generating refresh and access tokens",
+      "Something went wrong when generating refresh and access tokens"
     );
   }
 };
-
 const registerUser = asyncHandler(async (req, res) => {
   const { fullName, email, username, password } = req.body;
-
   if (
     [fullName, email, username, password].some((field) => field?.trim() === "")
   ) {
     throw new ApiError(400, "All fields are required");
   }
-
   const existedUser = await User.findOne({
+    // findOne ka use MongoDB / Mongoose me database se ek single document (record) find karne ke liye kiya jata hai jo given condition ko match karta ho.
     $or: [{ email }, { username }],
   });
-
   if (existedUser) {
     throw new ApiError(409, "User with email or username already exists");
   }
-
   const avatarLocalPath = req?.files?.avatar?.[0]?.path;
   const coverImageLocalPath = req?.files?.coverImage?.[0]?.path;
-
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar is required");
   }
-
   const avatar = await uploadToCloudinary(avatarLocalPath);
   const coverImage = coverImageLocalPath
     ? await uploadToCloudinary(coverImageLocalPath)
     : null;
-
   if (!avatar) {
     throw new ApiError(400, "Avatar upload failed");
   }
-
   const user = await User.create({
     fullName,
     avatar: avatar.url,
@@ -67,7 +58,7 @@ const registerUser = asyncHandler(async (req, res) => {
   });
 
   const createdUser = await User.findById(user._id).select(
-    "-password -refreshToken",
+    "-password -refreshToken"
   );
 
   if (!createdUser) {
@@ -100,40 +91,46 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
-    user._id,
+    user._id
   );
 
   const loggedInUser = await User.findById(user._id).select(
-    "-password -refreshToken",
+    "-password -refreshToken"
   );
 
   const options = {
     httpOnly: true,
+    // the browser hides that cookie from JavaScript.
     secure: true,
   };
 
-  return res
-    .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
-    .json(
-      new AppResponse(
-        200,
-        {
-          user: loggedInUser,
-          accessToken,
-          refreshToken,
-        },
-        "User logged in successfully",
-      ),
-    );
+  return (
+    res
+      .status(200)
+      .cookie("accessToken", accessToken, options)
+      // res.cookie(name, value, options);
+      .cookie("refreshToken", refreshToken, options)
+      .json(
+        new AppResponse(
+          200,
+          {
+            user: loggedInUser,
+            accessToken,
+            refreshToken,
+          },
+          "User logged in successfully"
+        )
+      )
+  );
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
+    //     Login & Register → user ke paas abhi token nahi hai, isliye req.user use nahi kar sakte
+    // Baaki sab routes (protected routes) → user already login hai, token bheja hai → req.user._id se identify karte hai
     req.user._id,
     { $unset: { refreshToken: 1 } }, //this removes the field from document
-    { new: true },
+    { new: true }
   );
 
   const options = {
@@ -147,7 +144,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     .clearCookie("refreshToken", options)
     .json(new AppResponse(200, {}, "User logged out"));
 });
-// abb humlog refresh acces token ka ek end point banate hai
+// abb humlog refresh access token ka ek end point banate hai
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken =
     req.cookies.refreshToken || req.body.refreshToken;
@@ -157,7 +154,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   try {
     const decodedToken = jwt.verify(
       incomingRefreshToken,
-      process.env.REFRESH_TOKEN,
+      process.env.REFRESH_TOKEN
     );
     const user = await User.findById(decodedToken?._id);
     if (!user) {
@@ -181,8 +178,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         new AppResponse(
           200,
           { accessToken, refreshToken: newRefreshToken },
-          "Access token refreshed",
-        ),
+          "Access token refreshed"
+        )
       );
   } catch (error) {
     throw new ApiError(401, error?.message || "Invalid refresh token");
@@ -198,6 +195,9 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
   }
   user.password = newPassword;
   await user.save({ validateBeforeSave: false });
+  //   You might only update the password, not all fields.
+  // Without validateBeforeSave: false, Mongoose checks all required fields in the schema.
+  // If some fields were missing in memory (or temporarily undefined), save would throw an error.
   return res
     .status(200)
     .json(new AppResponse(200, {}, "Password changed successfully"));
@@ -220,7 +220,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
         email: email,
       },
     },
-    { new: true },
+    { new: true }
   ).select("-password");
   return res
     .status(200)
@@ -242,7 +242,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
         avatar: avatar.url,
       },
     },
-    { new: true },
+    { new: true }
   ).select("-password");
   return res
     .status(200)
@@ -265,7 +265,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
         coverImage: coverImage.url,
       },
     },
-    { new: true },
+    { new: true }
   ).select("-password");
   return res
     .status(200)
@@ -334,7 +334,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     throw new ApiError(404, "channel doest not exist");
   }
   return res.status(200).json(
-    new AppResponse("200", channel[0], "user channel fetched successfully"),
+    new AppResponse("200", channel[0], "user channel fetched successfully")
     // [0] = first element of the array
 
     // So channel[0] is the actual user document, not the array.
@@ -397,8 +397,8 @@ const getWatchHistory = asyncHandler(async (req, res) => {
       new AppResponse(
         200,
         user[0]?.watchHistory || [],
-        "Watch history fetched successfully",
-      ),
+        "Watch history fetched successfully"
+      )
     );
 });
 

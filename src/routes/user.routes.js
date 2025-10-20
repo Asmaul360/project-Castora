@@ -23,12 +23,15 @@ router.post(
     { name: "avatar", maxCount: 1 },
     { name: "coverImage", maxCount: 1 },
   ]),
-  registerUser,
+  registerUser
 );
 
-router.post("/login", loginUser);
-router.post("/logout", verifyJWT, logoutUser);
-router.post("/refresh-token", refreshAccessToken);
+// router.post("/login", loginUser);
+// router.post("/logout", verifyJWT, logoutUser);
+// router.post("/refresh-token", refreshAccessToken);
+router.route("/login").post(loginUser);
+router.route("/logout").post(verifyJWT, logoutUser);
+router.route("/refresh-token").post(refreshAccessToken);
 router.route("/change-password").post(verifyJWT, changeCurrentPassword);
 //verifyJWT middleware korechi tar karon logged in log e kar sake password change
 router.route("/current-user").get(verifyJWT, getCurrentUser);

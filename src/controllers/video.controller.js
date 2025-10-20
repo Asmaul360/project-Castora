@@ -1,7 +1,7 @@
 import ApiError from "../utils/ApiError.js";
 import AppResponse from "../utils/AppResponse.js";
 import asyncHandler from "express-async-handler";
-import ffmpeg from "fluent-ffmpeg";
+
 import Video from "../models/video.model.js";
 import uploadToCloudinary from "../utils/cloudinary.js"; // default export
 
@@ -20,7 +20,7 @@ const uploadVideo = asyncHandler(async (req, res) => {
       if (!video || !video.secure_url)
         throw new ApiError(500, "Failed to upload video to Cloudinary");
       return video;
-    }),
+    })
   );
 
   // ------------------- CHANGE HERE -------------------
@@ -34,8 +34,8 @@ const uploadVideo = asyncHandler(async (req, res) => {
         description,
         owner: req.user._id,
         thumbnail: "", // you can set per video later
-      }),
-    ),
+      })
+    )
   );
   // ---------------------------------------------------
 
@@ -117,7 +117,7 @@ const getAllUserVideos = asyncHandler(async (req, res) => {
   res
     .status(200)
     .json(
-      new AppResponse(200, videos, "User uploaded videos fetched successfully"),
+      new AppResponse(200, videos, "User uploaded videos fetched successfully")
     );
 });
 
