@@ -15,35 +15,36 @@ A complete backend for a video & social platform built using Node.js, Express.js
 ✅ MongoDB + Mongoose ORM
 
 🛠️ Tech Stack
-Technology	Used For
-⚙️ Node.js	Backend Runtime
-🚀 Express.js	Web Framework
-🗄️ MongoDB	Database
-🔐 JWT	Authentication
-☁️ Cloudinary	Video/Image Uploads
-🔧 Mongoose	ODM for MongoDB
+Technology Used For
+⚙️ Node.js Backend Runtime
+🚀 Express.js Web Framework
+🗄️ MongoDB Database
+🔐 JWT Authentication
+☁️ Cloudinary Video/Image Uploads
+🔧 Mongoose ODM for MongoDB
 📦 Folder Structure
 castora-backend/
 │-- src/
-│   │-- controllers/
-│   │-- models/
-│   │-- routes/
-│   │-- middlewares/
-│   │-- utils/
-│   │-- app.js
-│   │-- index.js
+│ │-- controllers/
+│ │-- models/
+│ │-- routes/
+│ │-- middlewares/
+│ │-- utils/
+│ │-- app.js
+│ │-- index.js
 │-- uploads/
 │-- .env
 │-- package.json
 │-- README.md
 
 ⚡ Installation & Setup
+
 1. Clone the repository
-git clone https://github.com/YourUsername/castora-backend.git
-cd castora-backend
+   git clone https://github.com/YourUsername/castora-backend.git
+   cd castora-backend
 
 2. Install dependencies
-npm install
+   npm install
 
 3. Setup environment variables
 
@@ -58,7 +59,7 @@ CLOUDINARY_API_KEY=your_key
 CLOUDINARY_API_SECRET=your_secret
 
 4. Run the server
-npm run dev
+   npm run dev
 
 🛡️ API Authentication
 
